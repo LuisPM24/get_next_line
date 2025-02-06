@@ -12,6 +12,44 @@
 
 #include "get_next_line.h"
 
+static char	*get_text(char **buffer)
+{
+	int		cont;
+	int		len;
+	char	*line;
+
+	len = 0;
+	cont = 0;
+	if (!*buffer || !**buffer)
+		return (NULL);
+	while ((*buffer)[len] && (*buffer)[len] != '\n')
+		len++;
+	line = (char *)malloc((len + 2) * sizeof(char));
+	if (!line)
+		return (NULL);
+	while (cont < len)
+	{
+		line[cont] = (*buffer)[cont];
+		cont++;
+	}
+	if ((*buffer)[len] == '\n')
+		line[len++] = '\n';
+	line[len] = '\0';
+	next_line(buffer, len);
+	return (line);
+}
+
+static void	next_line(char	**buffer, int len)
+{
+	char	*new_buffer;
+
+	new_buffer = ft_strdup(*buffer + len);
+	if (!new_buffer)
+		return ;
+	free(*buffer);
+	*buffer = new_buffer;
+}
+
 char	*get_next_line(int fd)
 {
 	static char	*buffer;
@@ -19,28 +57,24 @@ char	*get_next_line(int fd)
 	char		*aux_to_free;
 	int			bytes_read;
 
-	if (fd < 0 || BUFFER_SIZE < 0)
+	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
 	if (!buffer)
 		buffer = ft_strdup("");
-	bytes_read = read(fd, bf_read, BUFFER_SIZE);
+	bytes_read = 1;
 	while (bytes_read > 0)
 	{
-		bf_read[bytes_read] = '\0';
-		aux_to_free = buffer;
-		buffer = ft_strjoin(buffer, bf_read);
-		free(aux_to_free);
-		aux_to_free = NULL;
-		if (ft_strrchr(buffer, '\n'))
+		if (!buffer || ft_strchr(buffer, '\n'))
 			break ;
 		bytes_read = read(fd, bf_read, BUFFER_SIZE);
-	}
-	if (bytes_read <= 0 && buffer)
-	{
+		if (bytes_read == -1)
+			return (free(buffer), buffer = NULL, NULL);
+		bf_read[bytes_read] = '\0';
+		aux_to_free = ft_strjoin(buffer, bf_read);
 		free(buffer);
-		buffer = NULL;
+		buffer = aux_to_free;
 	}
 	if (!buffer || *buffer == '\0')
-		return (NULL);
-	return (get_line(&buffer));
+		return (free(buffer), buffer = NULL, NULL);
+	return (get_text(&buffer));
 }
