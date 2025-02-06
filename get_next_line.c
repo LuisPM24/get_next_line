@@ -12,7 +12,7 @@
 
 #include "get_next_line.h"
 
-static char	*get_text(char **buffer)
+char	*get_text(char **buffer)
 {
 	int		cont;
 	int		len;
@@ -39,7 +39,7 @@ static char	*get_text(char **buffer)
 	return (line);
 }
 
-static void	next_line(char	**buffer, int len)
+void	next_line(char	**buffer, int len)
 {
 	char	*new_buffer;
 
